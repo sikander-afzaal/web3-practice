@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import Web3 from "web3";
 import detectEthereumProvider from "@metamask/detect-provider";
+import { loadContract } from "./utils/load-contract";
 
 const App = () => {
   const [web3Api, setWeb3Api] = useState({
     provider: null,
     web3: null,
+    contract: null,
   });
   const [account, setAccount] = useState(null);
 
@@ -16,10 +18,13 @@ const App = () => {
       // metamask injects a global API into websites
       // this API allows websites to request users, accounts, read data to blockchain, sign messages and transactions
       const provider = await detectEthereumProvider();
+      const contract = await loadContract("Faucet", provider);
+
       if (provider) {
         setWeb3Api({
           web3: new Web3(provider),
           provider: provider,
+          contract,
         });
       } else {
         console.log("Please, install metamask");
