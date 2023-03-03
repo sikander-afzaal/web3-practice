@@ -13,10 +13,11 @@ const App = () => {
   const [account, setAccount] = useState(null);
   const [balance, setBalance] = useState(0);
   const [reload, setReload] = useState(false);
-
-  const reloadEffect = useCallback(() => setReload((prev) => !prev), [reload]);
+  const canConnectToContract = account && web3Api.contract;
+  const reloadEffect = useCallback(() => setReload((prev) => !prev), []);
   const setAccountListener = (provider) => {
     provider.on("accountsChanged", () => window.location.reload());
+    provider.on("chainChanged", () => window.location.reload());
 
     // provider._jsonRpcConnection.events.on("notification", (payload) => {
     //   const { method } = payload;
@@ -70,7 +71,7 @@ const App = () => {
   //add funds function
   const addFunds = useCallback(async () => {
     const { contract, web3 } = web3Api;
-    const res = await contract.addFunds({
+    await contract.addFunds({
       from: account,
       value: web3.utils.toWei("1", "ether"),
     });
@@ -79,7 +80,7 @@ const App = () => {
   const withrawFunds = useCallback(async () => {
     const { contract, web3 } = web3Api;
     const withdrawAmount = web3.utils.toWei("0.1", "ether");
-    const res = await contract.withdraw(withdrawAmount, {
+    await contract.withdraw(withdrawAmount, {
       from: account,
     });
     reloadEffect();
@@ -109,7 +110,7 @@ const App = () => {
           <div className="balance-view is-size-2 mb-4">
             Current Balance: <strong>{balance}</strong> ETH
           </div>
-          {account && (
+          {canConnectToContract ? (
             <>
               <button onClick={addFunds} className="button is-primary  mr-2">
                 Donate 1 ETH
@@ -118,6 +119,8 @@ const App = () => {
                 Whithraw 0.1 ETH
               </button>
             </>
+          ) : (
+            <i>Connect to ganache</i>
           )}
         </div>
       </div>
